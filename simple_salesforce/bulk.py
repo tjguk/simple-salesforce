@@ -185,18 +185,22 @@ class SFBulkType(object):
 
         self._close_job(job_id=job['id'])
 
-        batch_status = self._get_batch(job_id=batch['jobId'],
-                                       batch_id=batch['id'])['state']
+        while True:
+            #
+            # cf https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_batches_interpret_status.htm
+            #
+            info = self._get_batch(job_id=batch['jobId'], batch_id=batch['id'])
+            batch_status = info['state']
+            if batch_status == "Completed":
+                break
+            elif batch_status in ("Failed", "Not Processed"):
+                raise RuntimeError(info['stateMessage'])
+            else:
+                sleep(wait)
 
-        while batch_status not in ['Completed', 'Failed', 'Not Processed']:
-            sleep(wait)
-            batch_status = self._get_batch(job_id=batch['jobId'],
-                                           batch_id=batch['id'])['state']
-
-        results = self._get_batch_results(job_id=batch['jobId'],
-                                          batch_id=batch['id'],
-                                          operation=operation)
-        return results
+        return self._get_batch_results(job_id=batch['jobId'],
+                                        batch_id=batch['id'],
+                                        operation=operation)
 
     # _bulk_operation wrappers to expose supported Salesforce bulk operations
     def delete(self, data):
