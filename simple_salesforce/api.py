@@ -795,6 +795,20 @@ class SFType(object):
 
         return result
 
+    def record_count(self):
+        """Count the number of records of n object
+        """
+        url = self.base_url + "recordCount"
+        result = self._call_salesforce('GET', url, sObjects=object_name)
+
+        json_result = result.json(object_pairs_hook=OrderedDict)
+        if len(json_result) == 0:
+            return None
+
+        for result in json_result['sObjects']:
+            return result['count']
+    __len__ = record_count
+
     # pylint: disable=no-self-use
     def _raw_response(self, response, body_flag):
         """Utility method for processing the response and returning either the
