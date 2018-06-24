@@ -209,6 +209,20 @@ class Salesforce(object):
 
         return json_result
 
+    def record_count(self, object_name):
+        """Count the number of records of n object
+        """
+        url = urljoin(self.base_url, 'recordCount/?sObjects=' + object_name)
+        print("URL:", url)
+        result = self._call_salesforce('GET', url)
+
+        json_result = result.json(object_pairs_hook=OrderedDict)
+        if len(json_result) == 0:
+            return None
+
+        for result in json_result['sObjects']:
+            return result['count']
+
     # SObject Handler
     def __getattr__(self, name):
         """Returns an `SFType` instance for the given Salesforce object type
