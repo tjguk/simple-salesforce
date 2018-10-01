@@ -209,6 +209,9 @@ class Salesforce(object):
 
         return json_result
 
+    def objects(self):
+        return dict((obj['name'], obj) for obj in self.describe()['sobjects'])
+
     def record_count(self, object_name):
         """Count the number of records of n object
         """
